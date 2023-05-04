@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Finance Data</title>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="//code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+	<script>
+		$(function() {
+			$("#datepicker").datepicker({
+				dateFormat: "yy-mm-dd"
+			});
+		});
+	</script>
+</head>
+<body>
+	<h1>Finance Data</h1>
+
+	<h2>Get all companies’ stock data for a particular day</h2>
+	<form method="GET" action="/stocks/date">
+		<label for="datepicker">Date:</label>
+		<input type="text" name="date" id="datepicker" placeholder="YYYY-MM-DD" required>
+		<button type="submit">Submit</button>
+	</form>
+
+	<h2>Get all stock data for a particular company</h2>
+	<form method="GET" action="/stocks/company">
+		<label for="company">Date:</label>
+		<input type="text" name="company" id="company" placeholder="Enter a valid company name like APPL, IBM, MSFT, AMZN" required>
+		<button type="submit">Submit</button>
+	</form>
+
+	<h2>Get all stock data for a particular company for a particular day</h2>
+	<form method="GET" action="/stocks">
+		<label for="company">Company:</label>
+		<input type="text" name="company" id="company" placeholder="Enter a valid company name like APPL, IBM, MSFT, AMZN" required>
+
+		<label for="datepicker">Date:</label>
+		<input type="text" name="date" id="datepicker" placeholder="YYYY-MM-DD" required>
+
+		<button type="submit">Submit</button>
+	</form>
+
+
+	{% if data %}
+	    <table>
+	        <thead>
+	            <tr>
+	                <th>Company Name</th>
+	                <th>Stock Price</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            {% for row in data %}
+	            <tr>
+	                <td>{{ row['Company'] }}</td>
+	                <td>{{ row['Price'] }}</td>
+	            </tr>
+	            {% endfor %}
+	        </tbody>
+	    </table>
+	    {% endif %}
+	<hr>
+
+</body>
+</html>

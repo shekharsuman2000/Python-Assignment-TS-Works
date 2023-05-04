@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Finance Data</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="//code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+	<script>
+		$(document).ready(function() {
+			// hide all sections by default
+			$('#option1, #option2, #option3, #option4').hide();
+			
+			// show the selected section
+			$('#select-option').on('change', function() {
+				var option = $(this).val();
+				$('#option1, #option2, #option3, #option4').hide();
+				$('#option' + option).show();
+			});
+		});
+	</script>
+
+	<script>
+		$(function() {
+			$("#datepicker").datepicker({
+				dateFormat: "yy-mm-dd"
+			});
+		});
+	</script>
+	<style >
+		body > div{
+			margin-top: 5%;
+		}
+		div{
+			padding: 2%;
+		}
+		form{
+			margin-top: 5%;
+		}
+	</style>
+</head>
+<body class="container text-center">
+	<h1>Finance Data</h1>
+	<small>Please select an option*</small>
+	<select id="select-option">
+		<option>Select an option</option>
+		<option value="1">Get all companies stock data for a particular day</option>
+		<option value="2">Get all stock data for a particular company</option>
+		<option value="3">Get all stock data for a particular company for a particular day</option>
+		<option value="4">Update stock data for a company by date.</option>
+	</select>
+
+	<div id="option1">
+		<h5 class="h5 text-secondry">Get All Companies' Stock Data for a Particular Day</h5>
+		<form method="GET" action="/stocks/date">
+			<label for="datepicker">Date:</label>
+			<input type="text" name="date" id="datepicker" placeholder="YYYY-MM-DD" required><br>
+			<small class="text text-danger">Data is available till 2023-05-04</small><br><br>
+			<button type="submit">Submit</button>
+		</form>
+	</div>
+
+	<div id="option2">
+		<h5 class="h5 text-secondry">Get All Stock Data for a Particular Company</h5>
+		<form method="GET" action="/stocks/company">
+			<label for="company">Company:</label>
+			<input type="text" name="company" id="company" placeholder="Enter a valid company name like APPL, IBM, MSFT, AMZN" width="50%" required><br>
+			<small class="text text-danger">Companies: IBM, AAPL, GOOGL, MSFT, AMZN</small><br><br>
+			<button type="submit">Submit</button><br>
+		</form>
+	</div>
+
+	<div id="option3">
+		<h5 class="h5 text-secondry">Get All Stock Data for a Particular Company for a Particular Day</h5>
+		<form method="GET" action="/stocks">
+			<label for="company">Company:</label>
+			<input type="text" name="company" id="company" placeholder="Enter a valid company name like APPL, IBM, MSFT, AMZN" required>
+			<br>
+			<small class="text text-danger">Companies: IBM, AAPL, GOOGL, MSFT, AMZN</small>
+			<br><br>
+			<label for="datepicker">Date:</label>
+			<input type="text" name="date" id="datepicker" placeholder="YYYY-MM-DD" required>
+			<br>
+			<small class="text text-danger">Data is available till 2023-05-04</small>
+			<br><br>
+			<button type="submit">Submit</button>
+		</form>
+	</div>
+
+	<div id="option4">
+		<h5 class="h5 text-secondry">Update Stock Data</h5>
+		<form method="POST" action="/update_stock_data_for_company_by_date" enctype="json">
+			<label for="company">Company:</label>
+			<select name="company" id="company" required>
+				<option value="" disabled selected>Select a company</option>
+				{% for company in companies %}
+					<option value="{{ company[0] }}">{{ company[0] }}</option>
+				{% endfor %}
+			</select> 
+			<!-- <label for="company">company</label>
+			<input type="text" name="company" id="company"> -->
+			<br><br>
+			<label for="datepicker">Date:</label>
+			<input type="text" name="date" id="datepicker" placeholder="YYYY-MM-DD" required>
+			<br>
+			<small class="text text-danger">Data is available till 2023-05-04</small>
+			<br><br>
+			<label for="open">Open:</label>
+			<input type="number" name="open" id="open" required>
+			<br><br>
+			<label for="high">High:</label>
+			<input type="number" name="high" id="high" required>
+			<br><br>
+			<label for="low">Low:</label>
+			<input type="number" name="low" id="low" required>
+			<br><br>
+			<label for="close">Close:</label>
+			<input type="number" name="close" id="close" required>
+			<br><br>
+			<label for="volume">Volume:</label>
+			<input type="number" name="volume" id="volume" required>
+			<br><br>
+			<button type="submit">Update Data</button>
+		</form>
+	</div>
+
+	<hr>
+</body>
+</html>

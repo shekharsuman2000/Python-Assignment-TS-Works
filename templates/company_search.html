@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Finance Data</title>
+</head>
+<body>
+	<h1>Finance Data</h1>
+
+	<h2>Get All Companies' Stock Data By the company name</h2>
+	<form method="GET" action="/stocks/date">
+		<label for="company">Date:</label>
+		<input type="text" name="company" id="company" placeholder="Enter a valid company name like APPL, IBM, MSFT, AMZN" required>
+		<button type="submit">Submit</button>
+	</form>
+
+	{% if data %}
+	    <table>
+	        <thead>
+	            <tr>
+	                <th>Company Name</th>
+	                <th>Stock Price</th>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            {% for row in data %}
+	            <tr>
+	                <td>{{ row['Company'] }}</td>
+	                <td>{{ row['Price'] }}</td>
+	            </tr>
+	            {% endfor %}
+	        </tbody>
+	    </table>
+	    {% endif %}
+	<hr>
+
+</body>
+</html>
