@@ -9,7 +9,7 @@ Assignment Done
   <li>Install YFinance:  "pip install yfinance"</l>
   <li>Install pandas: "pip install pandas"</li>
   </ul>
-  <li>Open the directory which contains the app.py file in the terminal and hit the command "python app.py"</li>
+  <li>Open the directory containing the app.py file in the terminal and execute the command 'python app.py</li>
   <li>Go to development server. Paste this "http://127.0.0.1:8000" url to browser.</li>
   <li>Now you can see the application interface in the webpage.</li>
 </ol>
