@@ -13,4 +13,4 @@ Assignment Done
   <li>Go to development server. Paste this "http://127.0.0.1:8000" url to browser.</li>
   <li>Now you can see the application interface in the webpage.</li>
 </ol>
-Note: The python should be intalled in your computer. 
+Note: The python should be intalled in your computer and Make sure you are in the correct directory where the 'app.py' file is located before running the command. 
