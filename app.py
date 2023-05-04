@@ -1,100 +1,90 @@
 import sqlite3
-from flask import Flask, jsonify, render_template
+from flask import Flask, g, jsonify, render_template, request
 
-import pandas as pd
-import os
+app = Flask(__name__, template_folder='templates')
+DATABASE = 'finance.db'
 
-app = Flask(__name__,template_folder='templates')
-conn = sqlite3.connect('finance.db')
+def get_db():
+    """
+    Open a new database connection if there is none yet for the current application context.
+    """
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+    return db
 
-@app.route('/', methods=['GET'])
+@app.teardown_appcontext
+def close_db(error):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+@app.route('/')
 def index():
-    # render the HTML template for the web page
-    # return os.getcwd()
-    return render_template('finance.html')
-
-
-@app.route('/', methods=['GET'])
-def index():
-    # render the HTML template for the web page
-    # return os.getcwd()
-     templateData = {
-         'time': date
-         }
-    return render_template('returntemplate.html')
-
-
-# Endpoint to get all companies' stock data for a particular day
-# @app.route("/finance/<string:date>", methods=["GET"])
-# def get_stock_data_by_date(date):
-#     conn = sqlite3.connect("./finance.db")
-#     data = pd.read_sql(f"SELECT * FROM stock_prices WHERE Date='{date}'", conn)
-#     conn.close()
-#     return jsonify(data.to_dict(orient="records"))
-
-
-# API endpoint to get all companies' stock data for a particular day
-@app.route('/stocks/date/<date>', methods=['GET'])
-def get_all_stocks_for_date(date):
-    return (date)
-    # conn = sqlite3.connect('./finance.db')
-    # c = conn.cursor()
-    # c.execute("SELECT * FROM stock_prices WHERE date = ?", (date,))
-    # data = c.fetchall()
-    # conn.close()
-    # if not data:
-    #     return jsonify({'message': 'No data found for the requested date.'})
-    # return jsonify(data)
-
-
-
-@app.route('/stocks/company/<company>', methods=['GET'])
-def get_all_stock_for_company(company):
-    conn = sqlite3.connect('./finance.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM stock_prices WHERE company = ?", (company,))
-    data = c.fetchall()
+    conn = sqlite3.connect("finance.db")
+    cur = conn.cursor()
+    cur.execute("SELECT DISTINCT company FROM stock_prices")
+    companies = cur.fetchall()
+    cur.execute("SELECT DISTINCT date FROM stock_prices")
+    dates = cur.fetchall()
     conn.close()
-    if not data:
+    return render_template('homepage.html', companies=companies, dates=dates)
+
+@app.route('/stocks/date', methods=['GET'])
+def get_all_stocks_for_date():
+    date = request.args.get('date')
+    if date:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM stock_prices WHERE Date=?", (date,))
+        rows = cursor.fetchall()
+        return render_template('stock.html', rows=rows)
+    else:
+        return "No date specified."
+        
+#get all stock data for a particular company
+@app.route('/stocks/company/', methods=['GET'])
+def get_all_stock_for_company():
+    company = request.args.get('company')
+    if company:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM stock_prices WHERE company = ?", (company,))
+        rows = cursor.fetchall()
+        return render_template('stock.html', rows=rows)
+    if not company:
         return jsonify({'message': 'No data found for the requested company.'})
     return jsonify(data)
-    
 
 
-# API endpoint to get all stock data for a particular company for a particular day
-@app.route('/stocks/<company>/<date>', methods=['GET'])
-def get_stock_for_company_for_date(company, date):
-    conn = sqlite3.connect('./finance.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM stock_prices WHERE company = ? AND date = ?", (company, date))
-    data = c.fetchall()
-    conn.close()
-    return jsonify(data)
+#get all stock data for a particular company for a particular day
+@app.route('/stocks/', methods=['GET'])
+def get_stock_for_company_for_date():
+    company = request.args.get('company')
+    date = request.args.get('date')
+    if company and date:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM stock_prices WHERE company = ? AND date = ?", (company, date))
+        rows = cursor.fetchall()
+        return render_template('stock.html', rows=rows)
 
-
-# API endpoint to update stock data for a company by date
-@app.route('/stocks/<company>/<date>', methods=['POST', 'PATCH'])
-def update_stock_for_company_for_date(company, date):
-    conn = sqlite3.connect('./finance.db')
-    c = conn.cursor()
-    open_value = request.json.get('open', None)
-    high_value = request.json.get('high', None)
-    low_value = request.json.get('low', None)
-    close_value = request.json.get('close', None)
-    volume_value = request.json.get('volume', None)
-    if open_value is not None:
-        c.execute("UPDATE stock_prices SET open = ? WHERE company = ? AND date = ?", (open_value, company, date))
-    if high_value is not None:
-        c.execute("UPDATE stock_prices SET high = ? WHERE company = ? AND date = ?", (high_value, company, date))
-    if low_value is not None:
-        c.execute("UPDATE stock_prices SET low = ? WHERE company = ? AND date = ?", (low_value, company, date))
-    if close_value is not None:
-        c.execute("UPDATE stock_prices SET close = ? WHERE company = ? AND date = ?", (close_value, company, date))
-    if volume_value is not None:
-        c.execute("UPDATE stock_prices SET volume = ? WHERE company = ? AND date = ?", (volume_value, company, date))
+# Update stock data for a company by date
+@app.route('/update_stock_data_for_company_by_date', methods=['POST', 'PATCH'])
+def update_stock_data_for_company_by_date():
+    company = request.form.get("company")
+    date = request.form.get("date")
+    open_price = request.form.get("open")
+    high_price = request.form.get("high")
+    low_price = request.form.get("low")
+    close_price = request.form.get('close')
+    volume = request.form.get("volume")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE stock_prices SET open='{open_price}', high='{high_price}', low='{low_price}', close='{close_price}', volume='{volume}' WHERE company='{company}' AND date='{date}'")
     conn.commit()
-    conn.close()
-    return 'Stock data updated successfully'
+    return "Data updated successfully!!!!"
 
 if __name__ == '__main__':
     app.run(port=8000, debug=True)
